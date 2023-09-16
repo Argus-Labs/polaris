@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: polard
+spec:
+  selector:
+    matchLabels:
+      app: polard
+  serviceName: "polard-sf"
+  replicas: 1
+  minReadySeconds: 10
+  template:
+    metadata:
+      labels:
+        app: polard
+    spec:
+      containers:
+        - name: polard
+          image: polard/base:latest
+          imagePullPolicy: Never
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "200m"
+            limits:
+              memory: "512Mi"
+              cpu: "400m"
+          # ports:
+          #   - containerPort: 8081
+          # livenessProbe:
+          #   httpGet:
+          #     path: /api/health/v1/check
+          #     port: 8081
+          #     scheme: HTTP
+          #   initialDelaySeconds: 5
+          #   periodSeconds: 15
+          #   timeoutSeconds: 5
+          # readinessProbe:
+          #   httpGet:
+          #     path: /api/health/v1/check
+          #     port: 8081
+          #     scheme: HTTP
+          #   initialDelaySeconds: 5
+          #   timeoutSeconds: 1
+          # command: ["bash"]
+          # args: ["docker-init.sh"]
+  # volumeClaimTemplates:
+  #   - metadata:
+  #       name: www
+  #     spec:
+  #       accessModes: ["ReadWriteOnce"]
+  #       storageClassName: "my-storage-class"
+  #       resources:
+  #         requests:
+  #           storage: 1Gi

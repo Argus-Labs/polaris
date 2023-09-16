@@ -43,6 +43,7 @@ WORKDIR /workdir
 
 # Copy go.work and go.work.sum files (🔥 upgrade)
 # TODO: conditional copy via USE_GOWORK arg.
+# ADD .git/ .
 COPY ./go.work ./go.work.sum ./
 
 # Copy the go.mod and go.sum files for each module
@@ -53,6 +54,7 @@ COPY ./lib/go.sum ./lib/go.mod ./lib/
 COPY ./magefiles/go.sum ./magefiles/go.mod ./magefiles/
 COPY ./e2e/localnet/go.sum ./e2e/localnet/go.mod ./e2e/localnet/
 COPY ./e2e/testapp/go.sum ./e2e/testapp/go.mod ./e2e/testapp/
+COPY .git ./
 
 # Download the go module dependencies
 RUN go mod download
