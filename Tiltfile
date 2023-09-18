@@ -6,11 +6,16 @@ version_settings(constraint='>=0.22.2')
 # build the base polard container. This is the base image
 # for all the other types of nodes.
 custom_build(
-  'polard/base',
-  'docker build -t $EXPECTED_REF -f ./e2e/testapp/docker/base.Dockerfile --build-arg GOOS=linux --build-arg GOARCH=arm64 ./',
+  'base',
+  'docker build -t $EXPECTED_REF -f ./k8s/base.Dockerfile --build-arg GOOS=linux --build-arg GOARCH=arm64 ./',
   ['./'],
 )
 
+docker_build(
+  'seed',
+  context='.',
+  dockerfile='./k8s/seed.Dockerfile',
+)
 # docker_build(
 #     'polard',
 #     context='.',
@@ -40,9 +45,9 @@ k8s_yaml('k8s/account.yaml')
 # k8s_resource allows customization where necessary such as adding port forwards and labels
 # https://docs.tilt.dev/api.html#api.k8s_resource
 k8s_resource(
-    'polard',
-    port_forwards='8081:8081',
-    labels=['polard']
+    'seed',
+    port_forwards='8545:8545',
+    labels=['seed']
 )
 
 # config.main_path is the absolute path to the Tiltfile being run

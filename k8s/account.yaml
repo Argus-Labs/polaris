@@ -1,30 +1,30 @@
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: polard
+  name: seed
 spec:
   selector:
     matchLabels:
-      app: polard
+      app: seed
   serviceName: "polard-sf"
   replicas: 1
   minReadySeconds: 10
   template:
     metadata:
       labels:
-        app: polard
+        app: seed
     spec:
       containers:
-        - name: polard
-          image: polard/base:latest
+        - name: seed
+          image: seed:latest
           imagePullPolicy: Never
           resources:
             requests:
-              memory: "256Mi"
-              cpu: "200m"
+              memory: "1Gi"
+              cpu: "500m"
             limits:
-              memory: "512Mi"
-              cpu: "400m"
+              memory: "1.5Gi"
+              cpu: "1000m"
           # ports:
           #   - containerPort: 8081
           # livenessProbe:
@@ -42,8 +42,8 @@ spec:
           #     scheme: HTTP
           #   initialDelaySeconds: 5
           #   timeoutSeconds: 1
-          # command: ["bash"]
-          # args: ["docker-init.sh"]
+          command: ["sh"]
+          args: ["-c", "sleep infinity"]
   # volumeClaimTemplates:
   #   - metadata:
   #       name: www
