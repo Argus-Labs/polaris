@@ -23,6 +23,7 @@ package state
 import (
 	"context"
 	"errors"
+	"fmt"
 	"math/big"
 	"sync"
 
@@ -201,9 +202,11 @@ func (p *plugin) CreateAccount(addr common.Address) {
 
 	// save the new account in the account keeper
 	p.ak.SetAccount(p.ctx, acc)
+	fmt.Println("SETTING ACC", acc.String())
 
 	// initialize the code hash to empty
 	p.cms.GetKVStore(p.storeKey).Set(CodeHashKeyFor(addr), emptyCodeHashBytes)
+	fmt.Println("SETTING", CodeHashKeyFor(addr), "TO", emptyCodeHashBytes)
 }
 
 // Exist implements the `StatePlugin` interface by reporting whether the given account address
@@ -260,6 +263,7 @@ func (p *plugin) GetBalance(addr common.Address) *big.Int {
 // SetBalance implements `StatePlugin` interface.
 func (p *plugin) SetBalance(addr common.Address, amount *big.Int) {
 	p.ctx.KVStore(p.storeKey).Set(BalanceKeyFor(addr), amount.Bytes())
+	fmt.Println("SETTING", BalanceKeyFor(addr), "TO", amount.Bytes())
 }
 
 // AddBalance implements the `StatePlugin` interface by adding the given amount
@@ -313,6 +317,7 @@ func (p *plugin) SetNonce(addr common.Address, nonce uint64) {
 	}
 
 	p.ak.SetAccount(p.ctx, acc)
+	fmt.Println("SETTING", acc.String())
 }
 
 // =============================================================================
@@ -353,12 +358,15 @@ func (p *plugin) SetCode(addr common.Address, code []byte) {
 	codeHash := crypto.Keccak256Hash(code)
 	ethStore := p.cms.GetKVStore(p.storeKey)
 	ethStore.Set(CodeHashKeyFor(addr), codeHash[:])
+	fmt.Println("SETTING", CodeHashKeyFor(addr), "TO", codeHash[:])
 
 	// store or delete code
 	if len(code) == 0 {
 		ethStore.Delete(CodeKeyFor(codeHash))
+		fmt.Println("DELETING", CodeHashKeyFor(addr))
 	} else {
 		ethStore.Set(CodeKeyFor(codeHash), code)
+		fmt.Println("SETTING", CodeKeyFor(codeHash), "TO", code)
 	}
 }
 
@@ -415,11 +423,13 @@ func (p *plugin) SetState(addr common.Address, key, value common.Hash) {
 	// If empty value is given, delete the state entry.
 	if len(value) == 0 || (value == common.Hash{}) {
 		p.cms.GetKVStore(p.storeKey).Delete(SlotKeyFor(addr, key))
+		fmt.Println("DELETING", SlotKeyFor(addr, key))
 		return
 	}
 
 	// Set the state entry.
 	p.cms.GetKVStore(p.storeKey).Set(SlotKeyFor(addr, key), value[:])
+	fmt.Println("SETTING", SlotKeyFor(addr, key), "TO", value[:])
 }
 
 // SetStorage sets the storage of an address.

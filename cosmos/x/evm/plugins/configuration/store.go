@@ -22,6 +22,7 @@ package configuration
 
 import (
 	"encoding/json"
+	"fmt"
 
 	"pkg.berachain.dev/polaris/cosmos/x/evm/types"
 	"pkg.berachain.dev/polaris/eth/params"
@@ -44,4 +45,5 @@ func (p *plugin) SetChainConfig(chainConfig *params.ChainConfig) {
 		panic(err)
 	}
 	p.paramsStore.Set([]byte{types.ChainConfigPrefix}, bz)
+	fmt.Println("SETTING", types.ChainConfigPrefix, "TO", bz)
 }

@@ -87,6 +87,7 @@ func (p *plugin) GetHeaderByHash(hash common.Hash) (*coretypes.Header, error) {
 
 // StoreHeader implements core.BlockPlugin.
 func (p *plugin) StoreHeader(header *coretypes.Header) error {
+	fmt.Println("STORING HEADER -- ROOT:", header.Root.String())
 	headerHash := header.Hash()
 	headerBz, err := coretypes.MarshalHeader(header)
 	if err != nil {
@@ -105,6 +106,8 @@ func (p *plugin) StoreHeader(header *coretypes.Header) error {
 	if blockHeight == 0 {
 		return p.writeGenesisHeaderBytes(headerHash, headerBz)
 	}
+
+	fmt.Println("STORING HEADER -- SHOULD NOT REACH")
 
 	kvstore := p.ctx.KVStore(p.storekey)
 	// set header key
@@ -159,7 +162,9 @@ func (p *plugin) readHeaderBytes(number uint64) ([]byte, error) {
 //	Header Hash      --> 0
 func (p *plugin) writeGenesisHeaderBytes(headerHash common.Hash, headerBz []byte) error {
 	p.ctx.KVStore(p.storekey).Set([]byte{types.GenesisHeaderKey}, headerBz)
+	fmt.Println("SETTING", types.GenesisHeaderKey, "TO", headerBz)
 	p.ctx.KVStore(p.storekey).Set(headerHash.Bytes(), new(big.Int).Bytes())
+	fmt.Println("SETTING", headerHash.Bytes(), "TO", new(big.Int).Bytes())
 	return nil
 }
 

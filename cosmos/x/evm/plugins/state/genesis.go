@@ -44,9 +44,7 @@ func (p *plugin) InitGenesis(ctx sdk.Context, ethGen *core.Genesis) {
 			p.SetCode(address, account.Code)
 		}
 		if account.Storage != nil {
-			for k, v := range account.Storage {
-				p.SetState(address, k, v)
-			}
+			p.SetStorage(address, account.Storage)
 		}
 		if account.Nonce != 0 {
 			p.SetNonce(address, account.Nonce)

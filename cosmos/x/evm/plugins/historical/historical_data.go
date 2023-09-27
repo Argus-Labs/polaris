@@ -40,6 +40,8 @@ import (
 
 // StoreBlock implements `core.HistoricalPlugin`.
 func (p *plugin) StoreBlock(block *coretypes.Block) error {
+	fmt.Println("STORE BLOCK -- ROOT:", block.Root().String())
+
 	blockNum := block.NumberU64()
 
 	// store block hash to block number.
@@ -52,9 +54,11 @@ func (p *plugin) StoreBlock(block *coretypes.Block) error {
 		return err
 	}
 	prefix.NewStore(store, []byte{types.BlockNumKeyToBlockPrefix}).Set(numBz, blockBz)
+	fmt.Println("SETTING", append([]byte{types.BlockNumKeyToBlockPrefix}, numBz...), "TO", blockBz)
 
 	// store block hash to block number.
 	prefix.NewStore(store, []byte{types.BlockHashKeyToNumPrefix}).Set(block.Hash().Bytes(), numBz)
+	fmt.Println("SETTING", append([]byte{types.BlockHashKeyToNumPrefix}, block.Hash().Bytes()...), "TO", numBz)
 
 	// store the version offchain for consistency.
 	offChainNum := sdk.BigEndianToUint64(store.Get([]byte{types.VersionKey}))
@@ -68,6 +72,7 @@ func (p *plugin) StoreBlock(block *coretypes.Block) error {
 		)
 	}
 	store.Set([]byte{types.VersionKey}, numBz)
+	fmt.Println("SETTING", types.VersionKey, "TO", numBz)
 	return nil
 }
 
