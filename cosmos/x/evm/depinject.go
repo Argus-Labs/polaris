@@ -25,11 +25,12 @@ import (
 	"cosmossdk.io/depinject"
 	store "cosmossdk.io/store/types"
 
-	sdkmempool "github.com/cosmos/cosmos-sdk/types/mempool"
-
 	modulev1alpha1 "pkg.berachain.dev/polaris/cosmos/api/polaris/evm/module/v1alpha1"
+	"pkg.berachain.dev/polaris/cosmos/config"
 	"pkg.berachain.dev/polaris/cosmos/x/evm/keeper"
 	ethprecompile "pkg.berachain.dev/polaris/eth/core/precompile"
+
+	sdkmempool "github.com/cosmos/cosmos-sdk/types/mempool"
 )
 
 //nolint:gochecknoinits // GRRRR fix later.
@@ -47,6 +48,7 @@ type DepInjectInput struct {
 	Config    *modulev1alpha1.Module
 	Key       *store.KVStoreKey
 
+	PolarisCfg        func() *config.Config
 	Mempool           sdkmempool.Mempool
 	CustomPrecompiles func() *ethprecompile.Injector `optional:"true"`
 
@@ -75,8 +77,8 @@ func ProvideModule(in DepInjectInput) DepInjectOutput {
 		in.Key,
 		in.Mempool,
 		in.CustomPrecompiles,
+		in.PolarisCfg(),
 	)
-
 	m := NewAppModule(k, in.AccountKeeper)
 
 	return DepInjectOutput{

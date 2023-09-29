@@ -146,7 +146,9 @@ func NewPolarisApp(
 				logger,
 				// supply the mempool
 				ethTxMempool,
+
 				// ADVANCED CONFIGURATION
+				PolarisConfigFn(evmconfig.MustReadConfigFromAppOpts(appOpts)),
 				PrecompilesToInject(app),
 				//
 				// AUTH
@@ -367,7 +369,7 @@ func (app *SimApp) RegisterAPIRoutes(apiSvr *api.Server, apiConfig config.APICon
 }
 
 func (app *SimApp) Close() error {
-	if pl := app.EVMKeeper.GetPolaris(); pl != nil {
+	if pl := app.EVMKeeper.Polaris(); pl != nil {
 		return pl.StopServices()
 	}
 	return nil

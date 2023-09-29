@@ -67,6 +67,7 @@ func NewKeeper(
 	storeKey storetypes.StoreKey,
 	ethTxMempool sdkmempool.Mempool,
 	pcs func() *ethprecompile.Injector,
+	polarisCfg *config.Config,
 ) *Keeper {
 	// We setup the keeper with some Cosmos standard sauce.
 	k := &Keeper{
@@ -76,6 +77,7 @@ func NewKeeper(
 	}
 
 	k.host = NewHost(
+		*polarisCfg,
 		storeKey,
 		sk,
 		ethTxMempool,
@@ -121,13 +123,8 @@ func (k *Keeper) Logger(ctx sdk.Context) log.Logger {
 	return ctx.Logger().With(types.ModuleName)
 }
 
-// GetHost returns the Host that contains all plugins.
-func (k *Keeper) GetHost() Host {
-	return k.host
-}
-
 // GetPolaris returns the Polaris instance.
-func (k *Keeper) GetPolaris() *polar.Polaris {
+func (k *Keeper) Polaris() *polar.Polaris {
 	return k.polaris
 }
 

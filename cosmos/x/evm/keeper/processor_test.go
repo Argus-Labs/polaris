@@ -38,7 +38,6 @@ import (
 	"pkg.berachain.dev/polaris/cosmos/precompile/staking"
 	testutil "pkg.berachain.dev/polaris/cosmos/testing/utils"
 	"pkg.berachain.dev/polaris/cosmos/x/evm/keeper"
-	"pkg.berachain.dev/polaris/cosmos/x/evm/plugins"
 	"pkg.berachain.dev/polaris/cosmos/x/evm/plugins/state"
 	evmmempool "pkg.berachain.dev/polaris/cosmos/x/evm/plugins/txpool/mempool"
 	"pkg.berachain.dev/polaris/eth/accounts/abi"
@@ -48,7 +47,6 @@ import (
 	coretypes "pkg.berachain.dev/polaris/eth/core/types"
 	"pkg.berachain.dev/polaris/eth/crypto"
 	"pkg.berachain.dev/polaris/eth/params"
-	"pkg.berachain.dev/polaris/lib/utils"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -73,6 +71,7 @@ var _ = Describe("Processor", func() {
 		signer       = coretypes.LatestSignerForChainID(params.DefaultChainConfig.ChainID)
 		legacyTxData *coretypes.LegacyTx
 		valAddr      = common.Address{0x21}.Bytes()
+		cfg          = config.DefaultConfig()
 	)
 
 	BeforeEach(func() {
@@ -88,6 +87,9 @@ var _ = Describe("Processor", func() {
 
 		// before chain, init genesis state
 		ctx, ak, _, sk = testutil.SetupMinimalKeepers()
+		cfg = config.DefaultConfig()
+		cfg.Node.DataDir = GinkgoT().TempDir()
+		cfg.Node.KeyStoreDir = GinkgoT().TempDir()
 		k = keeper.NewKeeper(
 			ak, sk,
 			storetypes.NewKVStoreKey("evm"),
@@ -95,22 +97,16 @@ var _ = Describe("Processor", func() {
 			func() *ethprecompile.Injector {
 				return ethprecompile.NewPrecompiles([]ethprecompile.Registrable{sc}...)
 			},
+			cfg,
 		)
 		ctx = ctx.WithBlockHeight(0)
-		for _, plugin := range k.GetHost().GetAllPlugins() {
-			plugin, hasInitGenesis := utils.GetAs[plugins.HasGenesis](plugin)
-			if hasInitGenesis {
-				Expect(plugin.InitGenesis(ctx, core.DefaultGenesis)).To(Succeed())
-			}
-		}
+		x := *core.DefaultGenesis
+		k.InitGenesis(ctx, &x)
 		validator, err := NewValidator(sdk.ValAddress(valAddr), PKs[0])
 		Expect(err).ToNot(HaveOccurred())
 		validator.Status = stakingtypes.Bonded
 		Expect(sk.SetValidator(ctx, validator)).To(Succeed())
 		sc = staking.NewPrecompileContract(ak, &sk)
-		cfg := config.DefaultConfig()
-		cfg.Node.DataDir = GinkgoT().TempDir()
-		cfg.Node.KeyStoreDir = GinkgoT().TempDir()
 		k.Setup(cfg, nil, log.NewTestLogger(GinkgoT()))
 		_ = sk.SetParams(ctx, stakingtypes.DefaultParams())
 
@@ -162,11 +158,11 @@ var _ = Describe("Processor", func() {
 			tx := coretypes.MustSignNewTx(key, signer, legacyTxData)
 			addr, err := signer.Sender(tx)
 			Expect(err).ToNot(HaveOccurred())
-			k.GetHost().GetStatePlugin().Reset(ctx)
-			k.GetHost().GetStatePlugin().CreateAccount(addr)
-			k.GetHost().GetStatePlugin().AddBalance(addr,
+			k.Polaris().Host().GetStatePlugin().Reset(ctx)
+			k.Polaris().Host().GetStatePlugin().CreateAccount(addr)
+			k.Polaris().Host().GetStatePlugin().AddBalance(addr,
 				(&big.Int{}).Mul(big.NewInt(9000000000000000000), big.NewInt(999)))
-			k.GetHost().GetStatePlugin().Finalize()
+			k.Polaris().Host().GetStatePlugin().Finalize()
 
 			// create the contract
 			// Zero out the meters.

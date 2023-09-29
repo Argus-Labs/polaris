@@ -26,6 +26,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkmempool "github.com/cosmos/cosmos-sdk/types/mempool"
 
+	"pkg.berachain.dev/polaris/cosmos/config"
 	"pkg.berachain.dev/polaris/cosmos/x/evm/plugins/block"
 	"pkg.berachain.dev/polaris/cosmos/x/evm/plugins/configuration"
 	"pkg.berachain.dev/polaris/cosmos/x/evm/plugins/engine"
@@ -73,6 +74,7 @@ type host struct {
 
 // Newhost creates new instances of the plugin host.
 func NewHost(
+	cfg config.Config,
 	storeKey storetypes.StoreKey,
 	sk block.StakingKeeper,
 	ethTxMempool sdkmempool.Mempool,
@@ -83,7 +85,7 @@ func NewHost(
 
 	// Build the Plugins
 	h.bp = block.NewPlugin(storeKey, sk)
-	h.cp = configuration.NewPlugin(storeKey)
+	h.cp = configuration.NewPlugin(&cfg.Polar.Chain)
 	h.ep = engine.NewPlugin()
 	h.gp = gas.NewPlugin()
 	h.txp = txpool.NewPlugin(utils.MustGetAs[*mempool.EthTxPool](ethTxMempool))
